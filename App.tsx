@@ -23,7 +23,7 @@ const App: React.FC = () => {
 
     // Advanced Reveal Observer
     const observerOptions = {
-      threshold: 0.15,
+      threshold: 0.1,
       rootMargin: "0px 0px -50px 0px"
     };
 
@@ -31,19 +31,26 @@ const App: React.FC = () => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           entry.target.classList.add('active');
-          // Once animated, we don't need to observe it anymore for a premium feel
           observer.unobserve(entry.target);
         }
       });
     }, observerOptions);
 
-    const revealElements = document.querySelectorAll('[data-reveal]');
-    revealElements.forEach(el => observer.observe(el));
+    // Initial trigger for elements already in view or rendered late
+    const refreshObserver = () => {
+      const revealElements = document.querySelectorAll('[data-reveal]');
+      revealElements.forEach(el => observer.observe(el));
+    };
+
+    // Run on mount and after a small delay to catch all components
+    refreshObserver();
+    const timeoutId = setTimeout(refreshObserver, 500);
 
     window.addEventListener('scroll', handleScroll);
     return () => {
       window.removeEventListener('scroll', handleScroll);
       observer.disconnect();
+      clearTimeout(timeoutId);
     };
   }, []);
 
